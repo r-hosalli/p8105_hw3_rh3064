@@ -67,3 +67,23 @@ test<- accel_data %>%
 ```
 
 # Problem 3
+
+## Data Loading
+
+```{r}
+library(p8105.datasets)
+data("ny_noaa")
+```
+
+## Data Cleaning
+
+```{r}
+noaa_df <- ny_noaa %>% 
+  mutate(
+    tmax = as.integer(tmax)/10,
+    tmin = as.integer(tmin)/10
+  ) %>%
+  janitor::clean_names() %>%
+  separate(date, into = c("year", "month", "dat"), sep = "-")
+
+```
