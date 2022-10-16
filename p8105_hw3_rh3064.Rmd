@@ -5,26 +5,37 @@ date: '`r Sys.Date()`'
 output: github_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r include=FALSE}
+library(tidyverse)
 ```
 
-## R Markdown
+# Problem 2
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+## Data Loading
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r}
+accel_data <- read_csv("./Data/accel_data.csv")
 ```
 
-## Including Plots
+## Data Tidying/Wrangling
 
-You can also embed plots, for example:
+The following chunk of code cleans the column names with `janitor::clean_names()`, then using `mutate()` creates a new variable *day_type* which indicates if it was a weekend or weekday. Finally `relocate()` is used to reorder the tibble so that more useful columns are first (*day_id*, *week*, *day*, *day_type*).
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+accel_data <- 
+  accel_data %>%
+  janitor::clean_names() %>%
+  mutate(
+    day_type = case_when(day == "Saturday" | day == "Sunday" ~ "Weekend",
+                         TRUE ~ "Weekday")
+    ) %>%
+  relocate(day_id, week, day, day_type)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## Data Description
+
+## Total Activity per Day
+
+## Plots
+
+# Problem 3
