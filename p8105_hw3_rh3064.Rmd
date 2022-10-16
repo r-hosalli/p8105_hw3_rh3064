@@ -77,11 +77,16 @@ data("ny_noaa")
 
 ## Data Cleaning
 
+Initial the data is cleaned by coercing tmax and tmin into integers. tmax tmin and prcp are then divided by 10 to get the correct C and mm values (originally the data is provided in tenths of degrees C or tenths of mm).
+
+Then, `janitor::clean_names()` is used, and the date is separate into three columns with `separate()`.
+
 ```{r}
 noaa_df <- ny_noaa %>% 
   mutate(
     tmax = as.integer(tmax)/10,
-    tmin = as.integer(tmin)/10
+    tmin = as.integer(tmin)/10,
+    prcp = prcp/10
   ) %>%
   janitor::clean_names() %>%
   separate(date, into = c("year", "month", "dat"), sep = "-")
