@@ -19,7 +19,11 @@ accel_data <- read_csv("./Data/accel_data.csv")
 
 ## Data Tidying/Wrangling
 
-The following chunk of code cleans the column names with `janitor::clean_names()`, then using `mutate()` creates a new variable *day_type* which indicates if it was a weekend or weekday. Finally `relocate()` is used to reorder the tibble so that more useful columns are first (*day_id*, *week*, *day*, *day_type*).
+The following chunk of code cleans the column names with `janitor::clean_names()`, then using `mutate()` creates a new variable *day_type* which indicates if it was a weekend or weekday. *day* and *day_type* are coerced into factors.
+
+Finally `relocate()` is used to reorder the tibble so that more useful columns are first (*day_id*, *week*, *day*, *day_type*).
+
+`head()` is used to take a glance at the tibble and check the variable classes, which seem reasonable.
 
 ```{r}
 accel_data <- 
@@ -27,15 +31,39 @@ accel_data <-
   janitor::clean_names() %>%
   mutate(
     day_type = case_when(day == "Saturday" | day == "Sunday" ~ "Weekend",
-                         TRUE ~ "Weekday")
+                         TRUE ~ "Weekday"),
+    day = as.factor(day),
+    day_type = as.factor(day_type)
+    
     ) %>%
   relocate(day_id, week, day, day_type)
+head(accel_data)
+
+accel_long <- accel_data %>% pivot_longer(activity_1:activity_1440,
+                                          names_to = "minute",
+                                          values_to = "activity_count")
+
 ```
 
 ## Data Description
 
+There are `r nrow(accel_data)` rows and `r ncol(accel_data)` columns in the *`accel_data`* tibble. There
+
 ## Total Activity per Day
 
+```{r}
+test<- accel_data %>%
+  mutate(
+    activity_totalv1 = rowSums(
+      across(c(activity_1:activity_1440)))
+    )
+
+```
+
 ## Plots
+
+```{r}
+
+```
 
 # Problem 3
