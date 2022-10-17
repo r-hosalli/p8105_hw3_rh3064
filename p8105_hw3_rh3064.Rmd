@@ -27,6 +27,8 @@ Finally `relocate()` is used to reorder the tibble so that more useful columns a
 
 `head()` is used to take a glance at the tibble and check the variable classes, which seem reasonable.
 
+Finally a new dataset is created by pivoting the original data with `pivot_longer()` so that the data is tidy.
+
 ```{r}
 accel_data <- 
   accel_data %>%
@@ -56,19 +58,22 @@ accel_long <- accel_data %>%
 
 ## Data Description
 
-There are `r nrow(accel_data)` rows and `r ncol(accel_data)` columns in the *`accel_data`* tibble. There
+There are `r nrow(accel_long)` rows and `r ncol(accel_long)` columns in the *`accel_long`* tibble. There
 
 ## Total Activity per Day
 
+Total activity count per day per week is calculated by first grouping the data using `group_by()` . Next, `summarise()` is used with `sum()` to calculate the activity totals. This is then piped to `pivot_wider()` to produce a more readable, non-tidy dataframe which is finally outputted via `knitr::kable()`.
+
 ```{r}
-accel_total <- accel_long %>%
+accel_long %>%
   group_by(week, day) %>%
   summarise(activity_total = sum(activity_count)) %>%
   pivot_wider(names_from = "day",
-              values_from = "activity_total")
-knitr::kable(accel_total,
-             caption = "Total Activity Counts by Week and Day")
+              values_from = "activity_total") %>%
+knitr::kable(caption = "Total Activity Counts by Week and Day")
 ```
+
+There is no obvious trend in activity count data, although there is a very count on Saturday in week 4 and 5; this count corresponds to an activity count of 1 per minute, while the average activity count per minute is `r round(mean(accel_long$activity_count), 2)`. This might indicate an error with the accelerometer on those days, or non-use of the device.
 
 ## Plots
 
@@ -81,6 +86,20 @@ ggplot(accel_long, mapping = aes(minute, activity_count)) +
     discrete = TRUE
   )
 ```
+
+The largest spike in counts is around the 1250 minute mark, which corresponds to around around 8:30 to 9:00 PM. The lowest activity is seen in the first 300 or so minutes, which corresponds to before 5AM, i.e. when they were asleep. General trends by day are difficult to parse due to the dense overlap of line plots.
+
+```{r}
+ggplot(accel_long, mapping = aes(minute, activity_count)) +
+  geom_smooth(aes(color = day)) +
+  labs(x = "Minute of the Day", y = "Activity Count") +
+  scale_color_viridis(
+    name = "Day",
+    discrete = TRUE
+  )
+```
+
+If we use `geom_smooth()` we can get a better sense of activity count trends by day of the week. There is a spike of activity on Sunday at around minute 600, which corresponds to 10AM.
 
 # Problem 3
 
