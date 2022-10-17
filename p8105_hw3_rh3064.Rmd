@@ -7,6 +7,8 @@ output: github_document
 
 ```{r include=FALSE}
 library(tidyverse)
+library(viridis)
+library(knitr)
 ```
 
 # Problem 2
@@ -30,18 +32,25 @@ accel_data <-
   accel_data %>%
   janitor::clean_names() %>%
   mutate(
+    
     day_type = case_when(day == "Saturday" | day == "Sunday" ~ "Weekend",
                          TRUE ~ "Weekday"),
-    day = as.factor(day),
-    day_type = as.factor(day_type)
+    
+    day = factor(day, levels = c("Monday", "Tuesday", "Wednesday", "Thursday",
+                                 "Friday", "Saturday", "Sunday")),
+    day_type = factor(day_type)
     
     ) %>%
   relocate(day_id, week, day, day_type)
+
 head(accel_data)
 
-accel_long <- accel_data %>% pivot_longer(activity_1:activity_1440,
-                                          names_to = "minute",
-                                          values_to = "activity_count")
+accel_long <- accel_data %>% 
+  pivot_longer(activity_1:activity_1440, 
+               names_to = "minute", 
+               names_prefix = "activity_", 
+               values_to = "activity_count") %>%
+  mutate(minute = as.numeric(minute))
 
 ```
 
@@ -52,18 +61,25 @@ There are `r nrow(accel_data)` rows and `r ncol(accel_data)` columns in the *`ac
 ## Total Activity per Day
 
 ```{r}
-test<- accel_data %>%
-  mutate(
-    activity_totalv1 = rowSums(
-      across(c(activity_1:activity_1440)))
-    )
-
+accel_total <- accel_long %>%
+  group_by(week, day) %>%
+  summarise(activity_total = sum(activity_count)) %>%
+  pivot_wider(names_from = "day",
+              values_from = "activity_total")
+knitr::kable(accel_total,
+             caption = "Total Activity Counts by Week and Day")
 ```
 
 ## Plots
 
 ```{r}
-
+ggplot(accel_long, mapping = aes(minute, activity_count)) +
+  geom_line(aes(color = day), alpha =0.7) +
+  labs(x = "Minute of the Day", y = "Activity Count") +
+  scale_color_viridis(
+    name = "Day",
+    discrete = TRUE
+  )
 ```
 
 # Problem 3
@@ -71,6 +87,7 @@ test<- accel_data %>%
 ## Data Loading
 
 ```{r}
+devtools::install_github("p8105/p8105.datasets")
 library(p8105.datasets)
 data("ny_noaa")
 ```
